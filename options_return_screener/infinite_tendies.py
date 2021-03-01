@@ -8,6 +8,13 @@ import shutil
 import os
 import time
 
+
+def recent_trades_only(df, today):
+    df['tmp'] = df['Last Trade Date'].apply(lambda x: (dp.parse(x) - today).days)
+    df = df[df['tmp'] <= 2]
+    return df.drop(columns = 'tmp').reset_index(drop=True)
+
+
 start_time = time.time() 
 
 # Import the ticker symbols
@@ -36,7 +43,7 @@ spot_upper_limit = 10
 
 for ticka in tickas:
     today = datetime.today()
-    master_df = pd.DataFrame(columns=['Contract Name', 'Strike', 'Bid', 'Ask', 'Volume', 'Open Interest', 'Return'])
+    master_df = pd.DataFrame(columns=['Contract Name', 'Strike', 'Bid', 'Ask', 'Volume', 'Open Interest', 'Return', 'Last Trade Date'])
     try:
         spot_price = yf_s.get_live_price(ticka)
         
@@ -54,7 +61,7 @@ for ticka in tickas:
                 if data.empty:
                     continue
                 
-                # clean yahoo_fin's shitty shitty ass data
+                
                 data['Bid'] = data['Bid'].astype(float)
                 data['Return'] = data['Bid']/data['Strike']
                 data['Expiry'] = exp_date
@@ -67,6 +74,7 @@ for ticka in tickas:
                 cleaned_df = data[data['Return'] >= required_return]
                 
                 cleaned_df = cleaned_df.reset_index(drop=True)
+                cleaned_df = recent_trades_only(cleaned_df, today)
                 master_df = master_df.append(cleaned_df, ignore_index=True)
 
             except:
