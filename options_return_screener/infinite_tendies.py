@@ -46,7 +46,7 @@ for ticka in tickas:
         for exp_date in yf_o.get_expiration_dates(ticka):
             try:
                 data = yf_o.get_puts(ticka, exp_date).replace('-', 0)
-                data = data.drop(['Last Trade Date', 'Change', '% Change', 'Implied Volatility'], 1)
+                data = data.drop(['Change', '% Change', 'Implied Volatility'], 1)
                 
                 # check strikes before doing work
                 data['Strike'] = data['Strike'].astype(float)
@@ -59,8 +59,8 @@ for ticka in tickas:
                 data['Return'] = data['Bid']/data['Strike']
                 data['Expiry'] = exp_date
                 data['Days'] = (dp.parse(exp_date) - today).days
-                data['Cumpounded Weekly'] = (data['Strike']*(1+data['Return'])/(data['Strike']))**(1/(data['Days']/7))
-                data['Cumpounded Weekly'] = data['Cumpounded Weekly'] - 1
+                data['Compounded Weekly'] = (data['Strike']*(1+data['Return'])/(data['Strike']))**(1/(data['Days']/7))
+                data['Compounded Weekly'] = data['Compounded Weekly'] - 1
                 # A = P(1 + x)^((date_exp - today)/7)
 
                 # retain only where strike AND return conditioins met                
